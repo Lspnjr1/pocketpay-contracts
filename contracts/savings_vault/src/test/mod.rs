@@ -280,6 +280,40 @@ fn test_get_balance_no_deposits() {
     assert_eq!(client.get_balance(&user), 0);
 }
 
+// -------------------------------------------------------------------------
+// get_locked_balance — Default Behaviour
+// -------------------------------------------------------------------------
+
+/// A brand-new user (no deposits, no locks) should have a locked balance of 0.
+#[test]
+fn test_get_locked_balance_default_zero_for_new_user_after_initialization() {
+    let env = test_env();
+    let (_id, client) = init_contract(&env);
+    let admin = new_user(&env);
+    let token = new_user(&env);
+    client.initialize(&admin, &token);
+
+    let user = new_user(&env);
+    assert_eq!(client.get_locked_balance(&user), 0);
+}
+
+/// A user who deposited but never locked funds should still have a locked
+/// balance of 0. Deposits alone must not affect locked balance.
+#[test]
+fn test_get_locked_balance_default_zero_after_deposit_without_lock() {
+    let env = test_env();
+    let (_id, client) = init_contract(&env);
+    let admin = new_user(&env);
+    let token = new_user(&env);
+    client.initialize(&admin, &token);
+
+    let user = new_user(&env);
+    deposit_balance(&client, &user, 1_000);
+
+    assert_eq!(client.get_locked_balance(&user), 0);
+    assert_eq!(client.get_balance(&user), 1_000);
+}
+
 // =========================================================================
 // Fund Locking Tests
 // =========================================================================
